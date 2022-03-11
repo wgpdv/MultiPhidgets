@@ -53,11 +53,11 @@ public class MainActivity extends Activity {
             this.getSystemService(Context.NSD_SERVICE);
             Net.enableServerDiscovery(ServerType.DEVICE_REMOTE);
 
-            Net.addServer("DESKTOP-P20L7MD", "137.44.129.24", 5661, "admin", 0);
+            Net.addServer("DESKTOP-P20L7MD", "137.44.128.72", 5661, "admin", 0);
 //            Net.addServer("KCW-DESKTOP", "192.168.1.78", 5661, "admin", 0);
 
             //Create your Phidget channels
-            // voltageRatioInput0 = new VoltageRatioInput();
+            voltageRatioInput0 = new VoltageRatioInput();
 
 
             for(int i = 0; i < LIGHT_COUNT; i++) {
@@ -123,7 +123,7 @@ public class MainActivity extends Activity {
         try {
             // Turn them all off first, then some back on if needed
             for(DOut d : dOuts) {
-                d.getDigitalOutput().setChannel(1);
+                d.getDigitalOutput().setState(false);
             }
 
             switch (state) {
