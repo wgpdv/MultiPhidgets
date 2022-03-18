@@ -5,8 +5,11 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.util.Log;
 import android.os.Bundle;
+import android.util.Pair;
 
 import com.phidget22.*;
+import com.phidget22.usb.Manager;
+
 import java.util.ArrayList;
 
 
@@ -33,32 +36,38 @@ public class MainActivity extends Activity {
         off
     };
 
-    int[] A = {1,0,0,0,0,0};
-    int[] B = {1,1,0,0,0,0};
-    int[] C = {1,0,0,0,0,1};
-    int[] D = {1,0,0,0,1,1};
-    int[] E = {1,0,0,0,1,0};
-    int[] F = {1,1,0,0,0,0}; // here
-    int[] G = {1,1,0,0,0,0};
-    int[] H = {1,1,0,0,0,0};
-    int[] I = {1,1,0,0,0,0};
-    int[] J = {1,1,0,0,0,0};
-    int[] K = {1,1,0,0,0,0};
-    int[] L = {1,1,0,0,0,0};
-    int[] M = {1,1,0,0,0,0};
-    int[] N = {1,1,0,0,0,0};
-    int[] O = {1,1,0,0,0,0};
-    int[] P = {1,1,0,0,0,0};
-    int[] Q = {1,1,0,0,0,0};
-    int[] R = {1,1,0,0,0,0};
-    int[] S = {1,1,0,0,0,0};
-    int[] T = {1,1,0,0,0,0};
-    int[] U = {1,1,0,0,0,0};
-    int[] V = {1,1,0,0,0,0};
-    int[] W = {1,1,0,0,0,0};
-    int[] X = {1,1,0,0,0,0};
-    int[] Y = {1,1,0,0,0,0};
-    int[] Z = {1,1,0,0,0,0};
+    /**
+     * Braille letters as arrays based on the light setup:
+     * 0 5
+     * 1 4
+     * 2 3
+     */
+    Pair<Character, int[]> brailleA = new Pair<Character, int[]>('A', new int[] {1,0,0,0,0,0}); // every line needs to look like this :/
+    int[] brailleB = {1,1,0,0,0,0};
+    int[] brailleC = {1,0,0,0,0,1};
+    int[] brailleD = {1,0,0,0,1,1};
+    int[] brailleE = {1,0,0,0,1,0};
+    int[] brailleF = {1,1,0,0,0,1};
+    int[] brailleG = {1,1,0,0,1,1};
+    int[] brailleH = {1,1,0,0,1,0};
+    int[] brailleI = {0,1,0,0,0,1};
+    int[] brailleJ = {0,1,0,0,1,1};
+    int[] brailleK = {1,0,1,0,0,0};
+    int[] brailleL = {1,1,1,0,0,0};
+    int[] brailleM = {1,0,1,0,0,1};
+    int[] brailleN = {1,0,1,0,1,1};
+    int[] brailleO = {1,0,1,0,1,0};
+    int[] brailleP = {1,1,1,0,0,1};
+    int[] brailleQ = {1,1,1,1,1,0};
+    int[] brailleR = {1,1,1,0,1,0};
+    int[] brailleS = {0,1,1,0,0,1};
+    int[] brailleT = {0,1,1,0,1,1};
+    int[] brailleU = {1,0,1,1,0,0};
+    int[] brailleV = {1,1,1,1,0,0};
+    int[] brailleW = {0,1,0,1,1,1};
+    int[] brailleX = {1,0,1,1,0,1};
+    int[] brailleY = {1,0,1,1,1,1};
+    int[] brailleZ = {1,0,1,1,1,0};
 
 
 
@@ -76,7 +85,7 @@ public class MainActivity extends Activity {
         try {
             //Allow direct USB connection of Phidgets
             if(getPackageManager().hasSystemFeature(PackageManager.FEATURE_USB_HOST))
-                com.phidget22.usb.Manager.Initialize(this);
+                Manager.Initialize(this);
 
             //Enable server discovery to list remote Phidgets
             this.getSystemService(Context.NSD_SERVICE);
@@ -139,52 +148,66 @@ public class MainActivity extends Activity {
                     } catch (PhidgetException phidgetException) {
                         phidgetException.printStackTrace();
                     }
-                    UpdateLEDs();
+//                    UpdateLEDs(); // This must be uncommented if slider is to work (also check method for comment)
                 }
             };
 
-    public void UpdateLEDs() {
+    public void UpdateLEDs(int[] letter) {
         try {
             // Turn them all off first, then some back on if needed
-            for(DOut d : dOuts) {
-                d.getDigitalOutput().setState(false);
+//            for(DOut d : dOuts) {
+//                d.getDigitalOutput().setState(false);
+//            }
+
+            for (int i = 0; i < dOuts.size(); i++) {
+                if (letter[i] == 1) {
+                    dOuts.get(i).getDigitalOutput().setState(true);
+                } else {
+                    dOuts.get(i).getDigitalOutput().setState(false);
+                }
             }
 
-            switch (state) {
-                case on:
-                    for (DOut d : dOuts) {
-                        d.getDigitalOutput().setState(true);
-                    }
-                    break;
-                case off:
-                    // Already turned off
-                    break;
-                case checker:
-                    for (int i = 0; i < dOuts.size(); i++) {
-                        if (i%2 == 0) {
-                            dOuts.get(i).getDigitalOutput().setState(true);
-                        } else {
-                            dOuts.get(i).getDigitalOutput().setState(false);
-                        }
-
-                    }
-                     break;
-                default:
-                    // Nothing
-                    break;
-            }
+//            switch (state) {
+//                case on:
+//                    for (DOut d : dOuts) {
+//                        d.getDigitalOutput().setState(true);
+//                    }
+//                    break;
+//                case off:
+//                    // Already turned off
+//                    break;
+//                case checker:
+//                    for (int i = 0; i < dOuts.size(); i++) {
+//                        if (i%2 == 0) {
+//                            dOuts.get(i).getDigitalOutput().setState(true);
+//                        } else {
+//                            dOuts.get(i).getDigitalOutput().setState(false);
+//                        }
+//
+//                    }
+//                    break;
+//                default:
+//                    // Nothing
+//                    break;
+//            }
         } catch (PhidgetException pE) {
             pE.printStackTrace();
         }
     }
 
-    public static RCServoPositionChangeListener onCh_PositionChange =
-            new RCServoPositionChangeListener() {
-                @Override
-                public void onPositionChange(RCServoPositionChangeEvent e) {
-                    Log.d("RCServo Position: ", String.valueOf(e.getPosition()));
-                }
-            };
+    public void ParseLetterToBraille(char c) {
+        c = Character.toUpperCase(c);
+
+
+    }
+
+//    public static RCServoPositionChangeListener onCh_PositionChange =
+//            new RCServoPositionChangeListener() {
+//                @Override
+//                public void onPositionChange(RCServoPositionChangeEvent e) {
+//                    Log.d("RCServo Position: ", String.valueOf(e.getPosition()));
+//                }
+//            };
 
     public static AttachListener onCh_Attach =
             new AttachListener() {
