@@ -25,13 +25,42 @@ public class MainActivity extends Activity {
     final int COLUMN_1_NUM = 4;
     final int COLUMN_2_NUM = 2;
 
-    final int V_R_SERIAL = 39834;
+    final int V_R_SERIAL = 39830;
 
     private enum pattern {
         checker,
         on,
         off
     };
+
+    int[] A = {1,0,0,0,0,0};
+    int[] B = {1,1,0,0,0,0};
+    int[] C = {1,0,0,0,0,1};
+    int[] D = {1,0,0,0,1,1};
+    int[] E = {1,0,0,0,1,0};
+    int[] F = {1,1,0,0,0,0}; // here
+    int[] G = {1,1,0,0,0,0};
+    int[] H = {1,1,0,0,0,0};
+    int[] I = {1,1,0,0,0,0};
+    int[] J = {1,1,0,0,0,0};
+    int[] K = {1,1,0,0,0,0};
+    int[] L = {1,1,0,0,0,0};
+    int[] M = {1,1,0,0,0,0};
+    int[] N = {1,1,0,0,0,0};
+    int[] O = {1,1,0,0,0,0};
+    int[] P = {1,1,0,0,0,0};
+    int[] Q = {1,1,0,0,0,0};
+    int[] R = {1,1,0,0,0,0};
+    int[] S = {1,1,0,0,0,0};
+    int[] T = {1,1,0,0,0,0};
+    int[] U = {1,1,0,0,0,0};
+    int[] V = {1,1,0,0,0,0};
+    int[] W = {1,1,0,0,0,0};
+    int[] X = {1,1,0,0,0,0};
+    int[] Y = {1,1,0,0,0,0};
+    int[] Z = {1,1,0,0,0,0};
+
+
 
     private pattern state = pattern.off;
 
@@ -46,14 +75,14 @@ public class MainActivity extends Activity {
 
         try {
             //Allow direct USB connection of Phidgets
-//            if(getPackageManager().hasSystemFeature(PackageManager.FEATURE_USB_HOST))
-//                com.phidget22.usb.Manager.Initialize(this);
+            if(getPackageManager().hasSystemFeature(PackageManager.FEATURE_USB_HOST))
+                com.phidget22.usb.Manager.Initialize(this);
 
             //Enable server discovery to list remote Phidgets
             this.getSystemService(Context.NSD_SERVICE);
             Net.enableServerDiscovery(ServerType.DEVICE_REMOTE);
 
-            Net.addServer("DESKTOP-P20L7MD", "137.44.128.72", 5661, "admin", 0);
+            Net.addServer("DESKTOP-P20L7MD", "137.44.128.78", 5661, "admin", 0);
 //            Net.addServer("KCW-DESKTOP", "192.168.1.78", 5661, "admin", 0);
 
             //Create your Phidget channels
@@ -61,12 +90,7 @@ public class MainActivity extends Activity {
 
 
             for(int i = 0; i < LIGHT_COUNT; i++) {
-                if (i < 3) {
-                    dOuts.add(new DOut(i));
-                } else {
-                    dOuts.add(new DOut(i+1));   // only because of how it's currently wired
-                    // suggest ports 0-5 instead if 012567
-                }
+                dOuts.add(new DOut(i));
 
             }
 
