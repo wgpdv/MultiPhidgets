@@ -43,33 +43,33 @@ public class MainActivity extends Activity {
      * 2 3
      */
     Pair<Character, int[]> brailleA = new Pair<Character, int[]>('A', new int[] {1,0,0,0,0,0}); // every line needs to look like this :/
-    int[] brailleB = {1,1,0,0,0,0};
-    int[] brailleC = {1,0,0,0,0,1};
-    int[] brailleD = {1,0,0,0,1,1};
-    int[] brailleE = {1,0,0,0,1,0};
-    int[] brailleF = {1,1,0,0,0,1};
-    int[] brailleG = {1,1,0,0,1,1};
-    int[] brailleH = {1,1,0,0,1,0};
-    int[] brailleI = {0,1,0,0,0,1};
-    int[] brailleJ = {0,1,0,0,1,1};
-    int[] brailleK = {1,0,1,0,0,0};
-    int[] brailleL = {1,1,1,0,0,0};
-    int[] brailleM = {1,0,1,0,0,1};
-    int[] brailleN = {1,0,1,0,1,1};
-    int[] brailleO = {1,0,1,0,1,0};
-    int[] brailleP = {1,1,1,0,0,1};
-    int[] brailleQ = {1,1,1,1,1,0};
-    int[] brailleR = {1,1,1,0,1,0};
-    int[] brailleS = {0,1,1,0,0,1};
-    int[] brailleT = {0,1,1,0,1,1};
-    int[] brailleU = {1,0,1,1,0,0};
-    int[] brailleV = {1,1,1,1,0,0};
-    int[] brailleW = {0,1,0,1,1,1};
-    int[] brailleX = {1,0,1,1,0,1};
-    int[] brailleY = {1,0,1,1,1,1};
-    int[] brailleZ = {1,0,1,1,1,0};
+    Pair<Character, int[]> brailleB = new Pair<Character, int[]>('B', new int[] {1,1,0,0,0,0});
+    Pair<Character, int[]> brailleC = new Pair<Character, int[]>('C', new int[] {1,0,0,0,0,1});
+    Pair<Character, int[]> brailleD = new Pair<Character, int[]>('D', new int[] {1,0,0,0,1,1});
+    Pair<Character, int[]> brailleE = new Pair<Character, int[]>('E', new int[] {1,0,0,0,1,0});
+    Pair<Character, int[]> brailleF = new Pair<Character, int[]>('F', new int[] {1,1,0,0,0,1});
+    Pair<Character, int[]> brailleG = new Pair<Character, int[]>('G', new int[] {1,1,0,0,1,1});
+    Pair<Character, int[]> brailleH = new Pair<Character, int[]>('H', new int[] {1,1,0,0,1,0});
+    Pair<Character, int[]> brailleI = new Pair<Character, int[]>('I', new int[] {0,1,0,0,0,1});
+    Pair<Character, int[]> brailleJ = new Pair<Character, int[]>('J', new int[] {0,1,0,0,1,1});
+    Pair<Character, int[]> brailleK = new Pair<Character, int[]>('K', new int[] {1,0,1,0,0,0});
+    Pair<Character, int[]> brailleL = new Pair<Character, int[]>('L', new int[] {1,1,1,0,0,0});
+    Pair<Character, int[]> brailleM = new Pair<Character, int[]>('M', new int[] {1,0,1,0,0,1});
+    Pair<Character, int[]> brailleN = new Pair<Character, int[]>('N', new int[] {1,0,1,0,1,1});
+    Pair<Character, int[]> brailleO = new Pair<Character, int[]>('O', new int[] {1,0,1,0,1,0});
+    Pair<Character, int[]> brailleP = new Pair<Character, int[]>('P', new int[] {1,1,1,0,0,1});
+    Pair<Character, int[]> brailleQ = new Pair<Character, int[]>('Q', new int[] {1,1,1,1,1,0});
+    Pair<Character, int[]> brailleR = new Pair<Character, int[]>('R', new int[] {1,1,1,0,1,0});
+    Pair<Character, int[]> brailleS = new Pair<Character, int[]>('S', new int[] {0,1,1,0,0,1});
+    Pair<Character, int[]> brailleT = new Pair<Character, int[]>('T', new int[] {0,1,1,0,1,1});
+    Pair<Character, int[]> brailleU = new Pair<Character, int[]>('U', new int[] {1,0,1,1,0,0});
+    Pair<Character, int[]> brailleV = new Pair<Character, int[]>('V', new int[] {1,1,1,1,0,0});
+    Pair<Character, int[]> brailleW = new Pair<Character, int[]>('W', new int[] {0,1,0,1,1,1});
+    Pair<Character, int[]> brailleX = new Pair<Character, int[]>('X', new int[] {1,0,1,1,0,1});
+    Pair<Character, int[]> brailleY = new Pair<Character, int[]>('Y', new int[] {1,0,1,1,1,1});
+    Pair<Character, int[]> brailleZ = new Pair<Character, int[]>('Z', new int[] {1,0,1,1,1,0});
 
-
+    Pair[] letters;
 
     private pattern state = pattern.off;
 
@@ -125,6 +125,9 @@ public class MainActivity extends Activity {
                 d.getDigitalOutput().open(5000);
             }
             // rcServo0.open(5000);
+
+
+            letters = LettersAsArray();
 
         } catch (PhidgetException pe) {
             pe.printStackTrace();
@@ -195,10 +198,24 @@ public class MainActivity extends Activity {
         }
     }
 
-    public void ParseLetterToBraille(char c) {
+    public Pair<Character,int[]>[] LettersAsArray() {
+        return new Pair[]{brailleA, brailleB, brailleC, brailleD, brailleE,
+                brailleF, brailleG, brailleH, brailleI, brailleJ, brailleK,
+                brailleL, brailleM, brailleN, brailleO, brailleP, brailleQ,
+                brailleR, brailleS, brailleT, brailleU, brailleV, brailleW,
+                brailleX, brailleY, brailleZ};
+    }
+
+    public int[] getBrailleLayout(Character c) {
         c = Character.toUpperCase(c);
-
-
+        for (Pair p : letters) {
+            if (p.first == c) {
+                return (int[]) p.second;
+            }
+        }
+        // If not in array
+        System.out.println("Error, no such letter");
+        return new int[]{0, 0, 0, 0, 0, 0};
     }
 
 //    public static RCServoPositionChangeListener onCh_PositionChange =
