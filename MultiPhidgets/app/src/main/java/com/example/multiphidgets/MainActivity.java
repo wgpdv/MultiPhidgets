@@ -1,5 +1,6 @@
 package com.example.multiphidgets;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -8,6 +9,12 @@ import android.os.Bundle;
 import android.util.Pair;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.LinearLayout;
+import android.widget.Switch;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.os.Vibrator;
 
 import com.phidget22.*;
 import com.phidget22.usb.Manager;
@@ -43,9 +50,10 @@ public class MainActivity extends Activity {
         off
     };
 
-    String sentence = "This is a test sentence";
-    char[] sentenceLetters;
-    int charIndex = 0;
+    static String sentence = "This is the default sentence";
+    static char[] sentenceLetters;
+    static int charIndex = 0;
+    static String[] sentences = {"Hes going to sacrifice himself", "Connor sucks","Its over anakin I have the high ground"};
 
     /**
      * Braille letters as arrays based on the light setup:
@@ -88,6 +96,10 @@ public class MainActivity extends Activity {
     ArrayList<DOut> dOuts = new ArrayList<DOut>();
 
     VoltageRatioInput voltageRatioInput0;
+    RFID ch;
+    Toast errToast;
+
+    Vibrator vib;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,7 +120,9 @@ public class MainActivity extends Activity {
 
             //Create your Phidget channels
             voltageRatioInput0 = new VoltageRatioInput();
+            ch = new RFID();
 
+            vib = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
             for(int i = 0; i < LIGHT_COUNT; i++) {
                 dOuts.add(new DOut(i));
@@ -138,6 +152,46 @@ public class MainActivity extends Activity {
             }
             // rcServo0.open(5000);
 
+            // RFID stuff
+            ch.addAttachListener(new AttachListener() {
+                public void onAttach(final AttachEvent attachEvent) {
+                    AttachEventHandler handler = new AttachEventHandler(ch);
+                    runOnUiThread(handler);
+                }
+            });
+
+            ch.addDetachListener(new DetachListener() {
+                public void onDetach(final DetachEvent detachEvent) {
+                    DetachEventHandler handler = new DetachEventHandler(ch);
+                    runOnUiThread(handler);
+
+                }
+            });
+
+            ch.addErrorListener(new ErrorListener() {
+                public void onError(final ErrorEvent errorEvent) {
+                    ErrorEventHandler handler = new ErrorEventHandler(ch, errorEvent);
+                    runOnUiThread(handler);
+
+                }
+            });
+
+            ch.addTagListener(new RFIDTagListener() {
+                public void onTag(RFIDTagEvent tagEvent) {
+                    RFIDTagEventHandler handler = new RFIDTagEventHandler(ch, tagEvent);
+                    runOnUiThread(handler);
+                }
+            });
+
+            ch.addTagLostListener(new RFIDTagLostListener() {
+                public void onTagLost(RFIDTagLostEvent tagLostEvent) {
+                    RFIDTagLostEventHandler handler = new RFIDTagLostEventHandler(ch, tagLostEvent);
+                    runOnUiThread(handler);
+                }
+            });
+
+            ch.open();
+
             // Initialise letters and such
             letters = LettersAsArray();
             UpdateSentence(sentence);
@@ -148,13 +202,15 @@ public class MainActivity extends Activity {
 
             //Do stuff with clicks
             btnPrev.setOnClickListener(new View.OnClickListener() {
+                @SuppressLint("MissingPermission")
                 @Override
                 public void onClick(View view) {
                     Log.d("Button", "Previous Clicked");
                     if (charIndex > 0) {
                         charIndex--;
                         UpdateLEDs(getBrailleLayout(sentenceLetters[charIndex]));
-                        // Vibrate?
+                        // Vibrate
+                        vib.vibrate(20);
                         // Sound?
                     }
                 }
@@ -172,6 +228,8 @@ public class MainActivity extends Activity {
                 }
             });
 
+//            UpdateLEDs(getBrailleLayout(sentenceLetters[charIndex]));
+
         } catch (PhidgetException pe) {
             pe.printStackTrace();
         }
@@ -181,7 +239,7 @@ public class MainActivity extends Activity {
             new VoltageRatioInputVoltageRatioChangeListener() {
                 @Override
                 public void onVoltageRatioChange(VoltageRatioInputVoltageRatioChangeEvent e) {
-                    Log.d("Voltage Ratio Value: ", String.valueOf(e.getVoltageRatio()));
+//                    Log.d("Voltage Ratio Value: ", String.valueOf(e.getVoltageRatio()));
 //                    Log.d("Voltage Ratio Value: ", e.toString());
                     try {
                         if (voltageRatioInput0.getVoltageRatio() < 0.33) {
@@ -205,11 +263,20 @@ public class MainActivity extends Activity {
 //                d.getDigitalOutput().setState(false);
 //            }
 
+            System.out.println("Displaying:\n"
+                    + letter[0] + " " + letter[5] + "\n"
+                    + letter[1] + " " + letter[4] + "\n"
+                    + letter[2] + " " + letter[3]);
+
             for (int i = 0; i < dOuts.size(); i++) {
+                System.out.println("Port " + i + " = " + letter[i]);
                 if (letter[i] == 1) {
                     dOuts.get(i).getDigitalOutput().setState(true);
                 } else {
                     dOuts.get(i).getDigitalOutput().setState(false);
+                }
+                for (DOut d : dOuts) {
+                    System.out.println(d.getPortNum() + " : " + d.getDigitalOutput().getState());
                 }
             }
 
@@ -251,8 +318,10 @@ public class MainActivity extends Activity {
 
     public int[] getBrailleLayout(Character c) {
         c = Character.toUpperCase(c);
+        System.out.println("Finding '" + c + "'");
         for (Pair p : letters) {
             if (p.first == c) {
+                System.out.println("Found '" + c + "'!");
                 return (int[]) p.second;
             }
         }
@@ -261,7 +330,7 @@ public class MainActivity extends Activity {
         return new int[]{0, 0, 0, 0, 0, 0};
     }
 
-    public void UpdateSentence(String s) {
+    public static void UpdateSentence(String s) {
         sentence = s;
         sentenceLetters = s.toCharArray();
     }
@@ -329,6 +398,146 @@ public class MainActivity extends Activity {
 
         public  DigitalOutput getDigitalOutput() {
             return d;
+        }
+    }
+
+    class RFIDTagEventHandler implements Runnable {
+        Phidget ch;
+        RFIDTagEvent tagEvent;
+
+        public RFIDTagEventHandler(Phidget ch, RFIDTagEvent tagEvent) {
+            this.ch = ch;
+            this.tagEvent = tagEvent;
+        }
+
+        @SuppressLint("MissingPermission")
+        public void run() {
+            System.out.println(tagEvent.getTag() + " has been detected!");
+            switch (tagEvent.getTag()) {
+                case "01069341f9":
+                    MainActivity.UpdateSentence(sentences[0]);
+                    break;
+                case "0106934df3":
+                    MainActivity.UpdateSentence(sentences[1]);
+                    break;
+                case "010238865b":
+                    MainActivity.UpdateSentence(sentences[2]);
+                    break;
+                default:
+                    MainActivity.UpdateSentence("This is the default sentence");
+                    break;
+            }
+//            charIndex = 0;
+//            UpdateLEDs(getBrailleLayout(sentenceLetters[charIndex]));
+
+            vib.vibrate(200);
+
+//            TextView tagTxt = (TextView)findViewById(R.id.tagTxt);
+//            TextView protocolTxt = (TextView)findViewById(R.id.protocolTxt);
+
+//            tagTxt.setText(tagEvent.getTag());
+//            protocolTxt.setText(tagEvent.getProtocol().getMessage());
+
+        }
+    }
+
+    class RFIDTagLostEventHandler implements Runnable {
+        Phidget ch;
+        RFIDTagLostEvent tagLostEvent;
+
+        public RFIDTagLostEventHandler(Phidget ch, RFIDTagLostEvent tagLostEvent) {
+            this.ch = ch;
+            this.tagLostEvent = tagLostEvent;
+        }
+
+        public void run() {
+            System.out.println(tagLostEvent.getTag() + " has been detected!");
+
+//            TextView tagTxt = (TextView)findViewById(R.id.tagTxt);
+//            TextView protocolTxt = (TextView)findViewById(R.id.protocolTxt);
+
+//            tagTxt.setText("");
+//            protocolTxt.setText("");
+        }
+    }
+
+    class AttachEventHandler implements Runnable {
+        Phidget ch;
+
+        public AttachEventHandler(Phidget ch) {
+            this.ch = ch;
+        }
+
+        public void run() {
+//            LinearLayout settingsAndData = (LinearLayout) findViewById(R.id.settingsAndData);
+//            settingsAndData.setVisibility(LinearLayout.VISIBLE);
+
+//            TextView attachedTxt = (TextView) findViewById(R.id.attachedTxt);
+
+//            attachedTxt.setText("Attached");
+//            try {
+////                TextView nameTxt = (TextView) findViewById(R.id.nameTxt);
+////                TextView serialTxt = (TextView) findViewById(R.id.serialTxt);
+////                TextView versionTxt = (TextView) findViewById(R.id.versionTxt);
+////                TextView channelTxt = (TextView) findViewById(R.id.channelTxt);
+////                TextView hubPortTxt = (TextView) findViewById(R.id.hubPortTxt);
+////                TextView labelTxt = (TextView) findViewById(R.id.labelTxt);
+//                TextView tagTxt = (TextView) findViewById(R.id.tagTxt);
+////                TextView protocolTxt = (TextView) findViewById(R.id.protocolTxt);
+////                CheckBox antennaEnabledBox = (CheckBox) findViewById(R.id.enableAntennaBox);
+//
+//                nameTxt.setText(ch.getDeviceName());
+//                serialTxt.setText(Integer.toString(ch.getDeviceSerialNumber()));
+//                versionTxt.setText(Integer.toString(ch.getDeviceVersion()));
+//                channelTxt.setText(Integer.toString(ch.getChannel()));
+//                hubPortTxt.setText(Integer.toString(ch.getHubPort()));
+//                labelTxt.setText(ch.getDeviceLabel());
+//
+//                tagTxt.setText("");
+//                protocolTxt.setText("");
+//                antennaEnabledBox.setChecked(((RFID)ch).getAntennaEnabled());
+//            } catch (PhidgetException e) {
+//                e.printStackTrace();
+//            }
+
+            //notify that we're done
+            synchronized (this) {
+                this.notify();
+            }
+        }
+    }
+
+    class DetachEventHandler implements Runnable {
+        Phidget ch;
+
+        public DetachEventHandler(Phidget ch) {
+            this.ch = ch;
+        }
+
+        public void run() {
+
+            synchronized(this)
+            {
+                this.notify();
+            }
+        }
+    }
+
+    class ErrorEventHandler implements Runnable {
+        Phidget ch;
+        ErrorEvent errorEvent;
+
+        public ErrorEventHandler(Phidget ch, ErrorEvent errorEvent) {
+            this.ch = ch;
+            this.errorEvent = errorEvent;
+        }
+        public void run() {
+            if (errToast == null)
+                errToast = Toast.makeText(getApplicationContext(), errorEvent.getDescription(), Toast.LENGTH_SHORT);
+
+            //replace the previous toast message if a new error occurs
+            errToast.setText(errorEvent.getDescription());
+            errToast.show();
         }
     }
 }
