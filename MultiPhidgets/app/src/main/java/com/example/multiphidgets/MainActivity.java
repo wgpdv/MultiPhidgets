@@ -93,7 +93,7 @@ public class MainActivity extends Activity {
 
     private pattern state = pattern.off;
 
-    ArrayList<DOut> dOuts = new ArrayList<DOut>();
+    public static ArrayList<DOut> dOuts = new ArrayList<DOut>();
 
     VoltageRatioInput voltageRatioInput0;
     RFID ch;
@@ -202,7 +202,6 @@ public class MainActivity extends Activity {
 
             //Do stuff with clicks
             btnPrev.setOnClickListener(new View.OnClickListener() {
-                @SuppressLint("MissingPermission")
                 @Override
                 public void onClick(View view) {
                     Log.d("Button", "Previous Clicked");
@@ -210,7 +209,7 @@ public class MainActivity extends Activity {
                         charIndex--;
                         UpdateLEDs(getBrailleLayout(sentenceLetters[charIndex]));
                         // Vibrate
-                        vib.vibrate(20);
+//                        vib.vibrate(20);
                         // Sound?
                     }
                 }
@@ -228,7 +227,7 @@ public class MainActivity extends Activity {
                 }
             });
 
-//            UpdateLEDs(getBrailleLayout(sentenceLetters[charIndex]));
+            UpdateLEDs(getBrailleLayout(sentenceLetters[charIndex]));
 
         } catch (PhidgetException pe) {
             pe.printStackTrace();
@@ -256,8 +255,12 @@ public class MainActivity extends Activity {
                 }
             };
 
-    public void UpdateLEDs(int[] letter) {
+    public static void UpdateLEDs(int[] letter) {
         try {
+            System.out.println("Previous =");
+            for (int i = 0; i < dOuts.size(); i++) {
+                System.out.println("Port " + dOuts.get(i).getPortNum() + " = " + letter[i] + " = " + dOuts.get(i).getDigitalOutput().getState());
+            }
             // Turn them all off first, then some back on if needed
 //            for(DOut d : dOuts) {
 //                d.getDigitalOutput().setState(false);
@@ -269,16 +272,19 @@ public class MainActivity extends Activity {
                     + letter[2] + " " + letter[3]);
 
             for (int i = 0; i < dOuts.size(); i++) {
-                System.out.println("Port " + i + " = " + letter[i]);
+
                 if (letter[i] == 1) {
                     dOuts.get(i).getDigitalOutput().setState(true);
                 } else {
                     dOuts.get(i).getDigitalOutput().setState(false);
                 }
-                for (DOut d : dOuts) {
-                    System.out.println(d.getPortNum() + " : " + d.getDigitalOutput().getState());
-                }
+//                for (DOut d : dOuts) {
+//                    System.out.println(d.getPortNum() + " : " + d.getDigitalOutput().getState());
+//                }
+                System.out.println("Port " + dOuts.get(i).getPortNum() + " = " + letter[i] + " = " + dOuts.get(i).getDigitalOutput().getState());
             }
+
+
 
 //            switch (state) {
 //                case on:
@@ -410,7 +416,7 @@ public class MainActivity extends Activity {
             this.tagEvent = tagEvent;
         }
 
-        @SuppressLint("MissingPermission")
+
         public void run() {
             System.out.println(tagEvent.getTag() + " has been detected!");
             switch (tagEvent.getTag()) {
@@ -427,10 +433,10 @@ public class MainActivity extends Activity {
                     MainActivity.UpdateSentence("This is the default sentence");
                     break;
             }
-//            charIndex = 0;
-//            UpdateLEDs(getBrailleLayout(sentenceLetters[charIndex]));
+            charIndex = 0;
+            MainActivity.UpdateLEDs(getBrailleLayout(sentenceLetters[charIndex]));
 
-            vib.vibrate(200);
+//            vib.vibrate(200);
 
 //            TextView tagTxt = (TextView)findViewById(R.id.tagTxt);
 //            TextView protocolTxt = (TextView)findViewById(R.id.protocolTxt);
