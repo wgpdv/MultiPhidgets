@@ -6,6 +6,8 @@ import android.content.pm.PackageManager;
 import android.util.Log;
 import android.os.Bundle;
 import android.util.Pair;
+import android.view.View;
+import android.widget.Button;
 
 import com.phidget22.*;
 import com.phidget22.usb.Manager;
@@ -24,6 +26,11 @@ import java.util.ArrayList;
 
 public class MainActivity extends Activity {
 
+    final String    SERVER_NAME     = "DESKTOP-P20L7MD";
+    final String    SERVER_IP       = "137.44.129.206";
+    final int       SERVER_PORT     = 5661;
+    final String    SERVER_PASSWORD = "admin";
+
     final int LIGHT_COUNT = 6;
     final int COLUMN_1_NUM = 4;
     final int COLUMN_2_NUM = 2;
@@ -35,6 +42,10 @@ public class MainActivity extends Activity {
         on,
         off
     };
+
+    String sentence = "This is a test sentence";
+    char[] sentenceLetters;
+    int charIndex = 0;
 
     /**
      * Braille letters as arrays based on the light setup:
@@ -68,6 +79,7 @@ public class MainActivity extends Activity {
     Pair<Character, int[]> brailleX = new Pair<Character, int[]>('X', new int[] {1,0,1,1,0,1});
     Pair<Character, int[]> brailleY = new Pair<Character, int[]>('Y', new int[] {1,0,1,1,1,1});
     Pair<Character, int[]> brailleZ = new Pair<Character, int[]>('Z', new int[] {1,0,1,1,1,0});
+    Pair<Character, int[]> brailleSpace = new Pair<Character, int[]>(' ', new int[] {0,0,0,0,0,0});
 
     Pair[] letters;
 
@@ -91,7 +103,7 @@ public class MainActivity extends Activity {
             this.getSystemService(Context.NSD_SERVICE);
             Net.enableServerDiscovery(ServerType.DEVICE_REMOTE);
 
-            Net.addServer("DESKTOP-P20L7MD", "137.44.128.78", 5661, "admin", 0);
+            Net.addServer(SERVER_NAME, SERVER_IP, SERVER_PORT, SERVER_PASSWORD, 0);
 //            Net.addServer("KCW-DESKTOP", "192.168.1.78", 5661, "admin", 0);
 
             //Create your Phidget channels
@@ -126,8 +138,39 @@ public class MainActivity extends Activity {
             }
             // rcServo0.open(5000);
 
-
+            // Initialise letters and such
             letters = LettersAsArray();
+            UpdateSentence(sentence);
+
+            // Get buttons
+            Button btnPrev = findViewById(R.id.buttonPrevious);
+            Button btnNext = findViewById(R.id.buttonNext);
+
+            //Do stuff with clicks
+            btnPrev.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.d("Button", "Previous Clicked");
+                    if (charIndex > 0) {
+                        charIndex--;
+                        UpdateLEDs(getBrailleLayout(sentenceLetters[charIndex]));
+                        // Vibrate?
+                        // Sound?
+                    }
+                }
+            });
+            btnNext.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.d("Button", "Next Clicked");
+                    if (charIndex < sentenceLetters.length-1) {
+                        charIndex++;
+                        UpdateLEDs(getBrailleLayout(sentenceLetters[charIndex]));
+                        // Vibrate?
+                        // Sound?
+                    }
+                }
+            });
 
         } catch (PhidgetException pe) {
             pe.printStackTrace();
@@ -203,7 +246,7 @@ public class MainActivity extends Activity {
                 brailleF, brailleG, brailleH, brailleI, brailleJ, brailleK,
                 brailleL, brailleM, brailleN, brailleO, brailleP, brailleQ,
                 brailleR, brailleS, brailleT, brailleU, brailleV, brailleW,
-                brailleX, brailleY, brailleZ};
+                brailleX, brailleY, brailleZ, brailleSpace};
     }
 
     public int[] getBrailleLayout(Character c) {
@@ -216,6 +259,11 @@ public class MainActivity extends Activity {
         // If not in array
         System.out.println("Error, no such letter");
         return new int[]{0, 0, 0, 0, 0, 0};
+    }
+
+    public void UpdateSentence(String s) {
+        sentence = s;
+        sentenceLetters = s.toCharArray();
     }
 
 //    public static RCServoPositionChangeListener onCh_PositionChange =
