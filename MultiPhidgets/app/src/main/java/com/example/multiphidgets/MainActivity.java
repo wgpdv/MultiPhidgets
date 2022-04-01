@@ -202,6 +202,7 @@ public class MainActivity extends Activity {
 
             //Do stuff with clicks
             btnPrev.setOnClickListener(new View.OnClickListener() {
+                @SuppressLint("MissingPermission")
                 @Override
                 public void onClick(View view) {
                     Log.d("Button", "Previous Clicked");
@@ -209,19 +210,21 @@ public class MainActivity extends Activity {
                         charIndex--;
                         UpdateLEDs(getBrailleLayout(sentenceLetters[charIndex]));
                         // Vibrate
-//                        vib.vibrate(20);
+                        vib.vibrate(20);
                         // Sound?
                     }
                 }
             });
             btnNext.setOnClickListener(new View.OnClickListener() {
+                @SuppressLint("MissingPermission")
                 @Override
                 public void onClick(View view) {
                     Log.d("Button", "Next Clicked");
                     if (charIndex < sentenceLetters.length-1) {
                         charIndex++;
                         UpdateLEDs(getBrailleLayout(sentenceLetters[charIndex]));
-                        // Vibrate?
+                        // Vibrate
+                        vib.vibrate(20);
                         // Sound?
                     }
                 }
@@ -416,7 +419,7 @@ public class MainActivity extends Activity {
             this.tagEvent = tagEvent;
         }
 
-
+        @SuppressLint("MissingPermission")
         public void run() {
             System.out.println(tagEvent.getTag() + " has been detected!");
             switch (tagEvent.getTag()) {
@@ -436,7 +439,7 @@ public class MainActivity extends Activity {
             charIndex = 0;
             MainActivity.UpdateLEDs(getBrailleLayout(sentenceLetters[charIndex]));
 
-//            vib.vibrate(200);
+            vib.vibrate(200);
 
 //            TextView tagTxt = (TextView)findViewById(R.id.tagTxt);
 //            TextView protocolTxt = (TextView)findViewById(R.id.protocolTxt);
